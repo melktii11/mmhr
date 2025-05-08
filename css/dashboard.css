@@ -43,6 +43,7 @@ body.body-bg {
 .nav-text h1 {
     font-size: 24px;
     margin: 0;
+    color: #000;
 }
 
 .nav-text p {
@@ -87,7 +88,7 @@ body.body-bg {
 
 /* Sections */
 .upload-section, .select-section, .sidebar-section {
-    background-color: rgba(151, 229, 135, 0.5);
+    background-color: rgba(151, 229, 135, 0.9);
     padding: 30px;
     border-radius: 10px;
     width: 700px;
@@ -171,7 +172,7 @@ h2 {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-left: 66%;
+    padding-left: 71.5%;
     position: relative;
 }
 
@@ -288,4 +289,100 @@ h2 {
 
 .dropdown-submenu .submenu-content.show {
     display: block;
+}
+
+
+/* Loading overlay styles */
+/*#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+*/
+
+
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(191, 209, 156, 0.699);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.loading-text {
+    font-size: 1.2em;
+    color: #363636;
+    font-weight: bold;
+    margin-top: -1%;
+    text-align: center;
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95) translate(-50%, -50%); }
+    to { opacity: 1; transform: scale(1) translate(-50%, -50%); }
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; visibility: hidden; }
+}
+
+.fixed-footer {
+    position: fixed;
+    bottom: 5px;
+    left: 5px;
+    background-color: #A0C878;
+    color: #000000;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 1000;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: fit-content;
+    transition: width 0.6s ease;
+
+}
+
+.full-text {
+    max-width: 0;
+    opacity: 0;
+    transition: max-width 0.4s ease, opacity 0.3s ease;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.fixed-footer:hover .full-text {
+    max-width: 400px; /* enough space for full text */
+    opacity: 1;
+    margin-left: 5px;
 }

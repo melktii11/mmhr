@@ -9,6 +9,8 @@ ini_set('max_execution_time', 300);
 include 'config.php';
 
 // (2) Fetch settings from the `settings` table
+
+// (2) Fetch settings from the `settings` table
 $result = $conn->query("SELECT max_upload_files, max_file_size_mb, allowed_file_extensions FROM settings WHERE id = 1");
 $settings = $result->fetch_assoc();
 
@@ -112,7 +114,8 @@ if (isset($_FILES['excelFile'])) {
         for ($rowIndex = $startRow; $rowIndex <= $highestRow; $rowIndex++) {
             $patientName = trim($sheet->getCell("{$colPatientName}$rowIndex")->getValue());
             $admissionDate = convertExcelDate(trim($sheet->getCell("{$colAdmissionDate}$rowIndex")->getValue()));
-            $dischargeDate = convertExcelDate(trim($sheet->getCell("{$colDischargeDate}$rowIndex")->getValue()));
+            $dischargeDate = isset($colDischargeDate) ? convertExcelDate(trim($sheet->getCell("{$colDischargeDate}$rowIndex")->getValue())) : null;
+
 
             if (empty($patientName) || empty($admissionDate)) {
                 continue;
@@ -179,7 +182,8 @@ if (isset($_FILES['excelFile'])) {
     echo "No file uploaded.";
 }
 
-header("Location: dashboard.php");
+header("Location: dashboard.php?success=1");
+exit;
 
 $conn->close();
 ?>

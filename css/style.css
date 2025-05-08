@@ -12,9 +12,9 @@ body {
 }
 
 .login-container {
-    background-color: rgb(151, 229, 135, 0.8);
+    background-color: rgb(151, 229, 135);
     padding: 30px;
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
     width: 300px;
 }
@@ -63,6 +63,7 @@ button:hover {
     border-radius: 4px;
     font-weight: bold;
     text-align: center;
+    display: flex;
 }
 
 .alert-danger {
@@ -116,4 +117,6 @@ p {
 .alert-danger {
     background-color: #f8d7da;
     color: #721c24;
+    position: absolute;
+    animation: fadeOut .3s ease-in 3s forwards;
 }

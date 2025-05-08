@@ -69,6 +69,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'maintenance') {
     exit;
 }
 
+
 $files_query = "SELECT id, file_name FROM uploaded_files ORDER BY upload_date DESC";
 $files_result = $conn->query($files_query);
 $files = [];
@@ -100,15 +101,16 @@ if ($selected_file_id) {
     }
 }
 
-
 $selected_sheet_1 = isset($_GET['sheet_1']) ? $_GET['sheet_1'] : '';
 $selected_sheet_2 = isset($_GET['sheet_2']) ? $_GET['sheet_2'] : '';
 $selected_sheet_3 = isset($_GET['sheet_3']) ? $_GET['sheet_3'] : '';
 
-$query = "SELECT admission_date, discharge_date, member_category FROM patient_records 
-          WHERE sheet_name = '$selected_sheet_1' AND file_id = $selected_file_id";
+$all_patient_data = [];
 
-$result = $conn->query($query);
+$all_sheets_query = "SELECT admission_date, discharge_date, member_category, sheet_name 
+                     FROM patient_records 
+                     WHERE file_id = $selected_file_id";
+$all_sheets_result = $conn->query($all_sheets_query);
 
 $summary = array_fill(1, 31, [
     'govt' => 0, 'private' => 0, 'self_employed' => 0, 'ofw' => 0,
@@ -118,7 +120,7 @@ $summary = array_fill(1, 31, [
 ]);
 
     #column 1-5
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $all_sheets_result->fetch_assoc()) {
         $admit = DateTime::createFromFormat('Y-m-d', trim($row['admission_date']))->setTime(0, 0, 0);
         $discharge = DateTime::createFromFormat('Y-m-d', trim($row['discharge_date']))->setTime(0, 0, 0);
         $category = trim(strtolower($row['member_category']));
@@ -128,35 +130,26 @@ $summary = array_fill(1, 31, [
             'JANUARY' => 1, 'FEBRUARY' => 2, 'MARCH' => 3, 'APRIL' => 4, 'MAY' => 5, 'JUNE' => 6,
             'JULY' => 7, 'AUGUST' => 8, 'SEPTEMBER' => 9, 'OCTOBER' => 10, 'NOVEMBER' => 11, 'DECEMBER' => 12
         ];
-
+    
+        $selected_month_name = strtoupper($selected_sheet_1);
+        if (!isset($month_numbers[$selected_month_name])) {
+            continue;
+        }
+        $selected_month = $month_numbers[$selected_month_name];
+    
+        $first_day_of_month = new DateTime("$selected_year-$selected_month-01");
+        $last_day_of_month = new DateTime("$selected_year-$selected_month-" . cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year));
+    
         if ($admit == $discharge) {
             continue;
         }
     
-        $selected_month_name = strtoupper($selected_sheet_1);
+        // If the patient has days in this selected month
+        if ($discharge >= $first_day_of_month && $admit <= $last_day_of_month) {
+            $startDay = max($first_day_of_month, $admit)->format('d');
+            $endDay = min($last_day_of_month, (clone $discharge)->modify('-1 day'))->format('d');
     
-        if (!isset($month_numbers[$selected_month_name])) {
-            continue; 
-        }
-    
-        $selected_month = $month_numbers[$selected_month_name];
-    
-        $first_day_of_month = new DateTime("$selected_year-$selected_month-01 00:00:00");
-        $last_day_of_month = new DateTime("$selected_year-$selected_month-" . cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year));
-
-        if ($discharge->format('d') == 1 && $admit < $first_day_of_month) {
-            continue;
-        }
-
-        $startDay = ($admit < $first_day_of_month) ? 1 : (int)$admit->format('d');
-        $endDay = (int)$discharge->format('d') - 1;
-
-        if ($startDay > $endDay) {
-            continue; 
-        }
-    
-        if ($startDay <= 31 && $endDay >= 1) {
-            for ($day = $startDay; $day <= $endDay; $day++) {
+            for ($day = (int)$startDay; $day <= (int)$endDay; $day++) {
                 if (!isset($summary[$day])) {
                     $summary[$day] = [
                         'govt' => 0, 'private' => 0, 'self_employed' => 0, 'ofw' => 0,
@@ -188,7 +181,7 @@ $summary = array_fill(1, 31, [
                 }
             }
         }
-    }    
+    }
 
     #nhip column
     foreach ($summary as $day => $row) {
@@ -206,7 +199,7 @@ $summary = array_fill(1, 31, [
             $row['pwd'] + $row['indigent'] + $row['pensioners'];
     }  
 
-    # non-nhip column
+    #non-nhip column
     $non_nhip_query = "SELECT date_admitted, date_discharge, category, sheet_name_3 
                    FROM patient_records_3 
                    WHERE sheet_name_3 = '$selected_sheet_3' AND file_id = $selected_file_id";
@@ -343,7 +336,6 @@ $summary = array_fill(1, 31, [
                     </div>
                 </div>
             </div>
-            <a href="https://bicutanmed.com/about-us" class="btrdy">About Us</a>
             <a href="logout.php" class="logout-link">
                 <img src="css/power-off.png" alt="logout" class="logout-icon">
             </a>
@@ -464,7 +456,7 @@ $summary = array_fill(1, 31, [
     <form method="GET" id="filterForm">
         <div class="sige">
             <label for="file_id">Select File:</label>
-            <select name="file_id" id="file_id" onchange="document.getElementById('filterForm').submit()">
+            <select class="pass" name="file_id" id="file_id" onchange="document.getElementById('filterForm').submit()">
                 <option value="">-- Choose File --</option>
                 <?php foreach ($files as $file): ?>
                     <option value="<?= $file['id'] ?>" <?= $selected_file_id == $file['id'] ? 'selected' : '' ?>>
@@ -474,7 +466,7 @@ $summary = array_fill(1, 31, [
             </select>
 
             <?php if ($selected_file_id): ?>
-                <select name="sheet_1" onchange="document.getElementById('filterForm').submit()">
+                <select class="col" name="sheet_1" onchange="document.getElementById('filterForm').submit()">
                     <option value="" disabled selected>Select Month</option>
                     <?php foreach ($sheets as $sheet) { ?>
                         <option value="<?php echo $sheet; ?>" <?php echo $sheet === $selected_sheet_1 ? 'selected' : ''; ?>>
@@ -483,7 +475,7 @@ $summary = array_fill(1, 31, [
                     <?php } ?>
                 </select>
 
-                <select name="sheet_2" onchange="document.getElementById('filterForm').submit()">
+                <select class="col" name="sheet_2" onchange="document.getElementById('filterForm').submit()">
                     <option value="" disabled selected>Select Admission Sheet</option>
                     <?php foreach ($sheets_2 as $sheet) { ?>
                         <option value="<?php echo $sheet; ?>" <?php echo $sheet === $selected_sheet_2 ? 'selected' : ''; ?>>
@@ -492,7 +484,7 @@ $summary = array_fill(1, 31, [
                     <?php } ?>
                 </select>
 
-                <select name="sheet_3" onchange="document.getElementById('filterForm').submit()">
+                <select class="col" name="sheet_3" onchange="document.getElementById('filterForm').submit()">
                     <option value="" disabled selected>Select Discharge Sheet</option>
                     <?php foreach ($sheets_3 as $sheet): ?>
                         <option value="<?= $sheet ?>" <?= $sheet == $selected_sheet_3 ? 'selected' : '' ?>>
@@ -623,24 +615,45 @@ $summary = array_fill(1, 31, [
       <div class="formula">
         <div>Total of NHIP + NON-NHIP: <?= $totals['total']; ?></div>
         <div>MBOR = (Total / (Days x 100)) x 100</div>
+        <div><?= $days_in_month * 100; ?></div>
+        <div>Number of days per Month indicated X Number of DOH Authorized Beds</div><br><br>
       </div>
         
       <p><b>2. Monthly NHIP Beneficiary Occupancy Rate (MNHIBOR) = <u><?= number_format($mnhibor, 2); ?>%</u></b></p>
       <div class="formula">
         <div>NHIP Total: <?= $totals['nhip']; ?></div>
         <div>MNHIBOR = (NHIP / (Days x 100)) x 100</div>
+        <div><?= $days_in_month * 100; ?></div>
+        <div>Number of days per Month indicated X Number of PHIC Accredited Beds</div>
       </div>
         
-      <p><b>3. Average Length of Stay per NHIP Patient (ASLP) = <u><?= $totals_discharge['nhip'] > 0 ? number_format($aslp, 2) : 'N/A'; ?></u></b></p>
+<?php
+  if ($totals_discharge['nhip'] > 0) {
+    $aslp = $totals['nhip'] / $totals_discharge['nhip'];
+  } else {
+    $aslp = 0;
+  }
+?>
+      <p><b>3. Average Length of Stay per NHIP Patient (ASLP) = <u><?= $totals_discharge['nhip'] > 0 ? number_format($aslp, 2) : 'N/A'; ?>%</u></b></p>
       <div class="formula">
         <div>NHIP Total: <?= $totals['nhip']; ?></div>
         <div>ASLP = (NHIP Total / NHIP Discharges)</div>
+        <div><?= $totals_discharge['nhip']; ?></div>
+        <div>Total No. of NHIP Discharges</div>
       </div>
     </div>
   </div>     
 </div>
 
 </body>
+
+<div class="fixed-footer">
+    <small>
+        <span class="copyright-symbol">©</span>
+        <span class="full-text"> Bicutan Medical Center Inc. All rights reserved.</span>
+    </small>
+</div>
+
 <script>
 
 

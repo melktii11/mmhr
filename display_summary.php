@@ -69,7 +69,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'maintenance') {
     exit;
 }
 
-
 $files_query = "SELECT id, file_name FROM uploaded_files ORDER BY upload_date DESC";
 $files_result = $conn->query($files_query);
 $files = [];
@@ -119,13 +118,26 @@ $summary = array_fill(1, 31, [
     'total_discharges_non_nhip' => 0,'lohs_nhip' => 0, 'lohs_non_nhip' => 0
 ]);
 
+    $year_query = $conn->prepare("SELECT file_name FROM uploaded_files WHERE id = ?");
+    $year_query->bind_param("i", $selected_file_id);
+    $year_query->execute();
+    $year_result = $year_query->get_result();
+
+    if ($year_row = $year_result->fetch_assoc()) {
+        $file_name = $year_row['file_name'];
+
+        preg_match('/\b(20\d{2})\b/', $file_name, $matches);
+        $selected_year = isset($matches[1]) ? (int)$matches[1] : date('Y'); 
+    } else {
+        $selected_year = date('Y');
+    }
+
     #column 1-5
     while ($row = $all_sheets_result->fetch_assoc()) {
         $admit = DateTime::createFromFormat('Y-m-d', trim($row['admission_date']))->setTime(0, 0, 0);
         $discharge = DateTime::createFromFormat('Y-m-d', trim($row['discharge_date']))->setTime(0, 0, 0);
         $category = trim(strtolower($row['member_category']));
     
-        $selected_year = 2025;
         $month_numbers = [
             'JANUARY' => 1, 'FEBRUARY' => 2, 'MARCH' => 3, 'APRIL' => 4, 'MAY' => 5, 'JUNE' => 6,
             'JULY' => 7, 'AUGUST' => 8, 'SEPTEMBER' => 9, 'OCTOBER' => 10, 'NOVEMBER' => 11, 'DECEMBER' => 12
@@ -138,7 +150,7 @@ $summary = array_fill(1, 31, [
         $selected_month = $month_numbers[$selected_month_name];
     
         $first_day_of_month = new DateTime("$selected_year-$selected_month-01");
-        $last_day_of_month = new DateTime("$selected_year-$selected_month-" . cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year));
+        $last_day_of_month = new DateTime("$selected_year-$selected_month-" . cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year));  
     
         if ($admit == $discharge) {
             continue;
@@ -339,7 +351,6 @@ $summary = array_fill(1, 31, [
                     </div>
                 </div>
             </div>
-            <a href="https://bicutanmed.com/about-us" class="btrdy">About Us</a>
             <a href="logout.php" class="logout-link">
                 <img src="css/power-off.png" alt="logout" class="logout-icon">
             </a>
@@ -361,12 +372,8 @@ $summary = array_fill(1, 31, [
     <main class="main-content">
         <aside>
             <div class="sidebar" id="sidebar">
-                <h3>Upload Excel File</h3>
-                <form action="upload.php" method="POST" enctype="multipart/form-data">
-                    <input type="file" name="excelFile" accept=".xlsx, .xls">
-                    <button type="submit" class="btn1 btn-success">Upload</button>
-                </form>
-                <button onclick="printTable()" class="btn btn-success">Print Table</button>
+                <h3>Menu</h3>
+                <button class="btn btn-success no-print" onclick="window.print()">Print Table</button>
                 <form action="census.php" method="GET">
                     <button type="submit" class="btn btn-primary btn-2">View MMHR Census</button>
                 </form>
@@ -389,7 +396,7 @@ $summary = array_fill(1, 31, [
                 <form method="GET" class="mb-3" id="filterForm">
                     <div class="sige">
                     <label for="file_id">Select File:</label>
-                    <select name="file_id" id="file_id" onchange="document.getElementById('filterForm').submit()">
+                    <select class="pass" name="file_id" id="file_id" onchange="document.getElementById('filterForm').submit()">
                         <option value="">-- Choose File --</option>
                         <?php foreach ($files as $file): ?>
                             <option value="<?= $file['id'] ?>" <?= $selected_file_id == $file['id'] ? 'selected' : '' ?>>
@@ -397,9 +404,10 @@ $summary = array_fill(1, 31, [
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <br><br>
                     <?php if ($selected_file_id): ?>
                     <label class="col2-5"></label>
-                    <select name="sheet_1" onchange="document.getElementById('filterForm').submit()" class="form-select mb-2">
+                    <select class="col" name="sheet_1" onchange="document.getElementById('filterForm').submit()" class="form-select mb-2">
                     <option value="" disabled selected>Select Month</option>
                         <?php foreach ($sheets as $sheet) { ?>
                             <option value="<?php echo $sheet; ?>" <?php echo $sheet === $selected_sheet_1 ? 'selected' : ''; ?>>
@@ -409,7 +417,7 @@ $summary = array_fill(1, 31, [
                     </select>
 
                     <label class="col7"></label>
-                    <select name="sheet_2" onchange="document.getElementById('filterForm').submit()" class="form-select mb-2">
+                    <select class="col" name="sheet_2" onchange="document.getElementById('filterForm').submit()" class="form-select mb-2">
                     <option value="" disabled selected>Select Admission Sheet</option>
                         <?php foreach ($sheets_2 as $sheet) { ?>
                             <option value="<?php echo $sheet; ?>" 
@@ -420,7 +428,7 @@ $summary = array_fill(1, 31, [
                     </select>
 
                     <label class="col8"></label>
-                    <select name="sheet_3" onchange="document.getElementById('filterForm').submit()" class="form-select mb-2">
+                    <select class="col" name="sheet_3" onchange="document.getElementById('filterForm').submit()" class="form-select mb-2">
                     <option value="" disabled selected>Select Discharge Sheet</option>
                     <?php foreach ($sheets_3 as $sheet): ?>
                         <option value="<?= $sheet ?>" <?= $sheet == $selected_sheet_3 ? 'selected' : '' ?>><?= $sheet ?></option>
@@ -453,13 +461,13 @@ $summary = array_fill(1, 31, [
                                 <th colspan="2" style="background-color: #c7f9ff;"> NHIP / NON-NHIP</th>
                                 <th rowspan="2" style="background-color: yellow;">Total Admissions</th>
                                 <th colspan="2" style="background-color: yellow;">Total Discharges</th>
-                                <th colspan="2" style="background-color: yellow;">Accumulated Patients LOHS</th>
+                                <th colspan="2" style="background-color: #c7f9ff;">Accumulated Patients LOHS</th>
                             </tr>
                             <tr>
                                 <th style="background-color: green; color: white;">Gov’t</th><th style="background-color: green; color: white;">Private</th>
                                 <th style="background-color: green; color: white;">Self-Employed</th><th style="background-color: green; color: white;">OFW</th>
                                 <th style="background-color: green; color: white;">OWWA</th><th style="background-color: green; color: white;">SC</th><th style="background-color: green; color: white;">PWD</th>
-                                <th style="background-color:rgb(0, 0, 0); color: white;" id="th1">NHIP</th><th style="background-color: #c7f9ff;">NON-NHIP</th>
+                                <th style="background-color: #c7f9ff; color: black;" id="th1">NHIP</th><th style="background-color: #c7f9ff;">NON-NHIP</th>
                                 <th style="background-color: orange;">NHIP</th><th style="background-color: orange;">NON-NHIP</th>
                                 <th style="background-color: #c7f9ff;">NHIP</th><th style="background-color: #c7f9ff;">NON-NHIP</th>
                             </tr>
@@ -526,6 +534,12 @@ $summary = array_fill(1, 31, [
             </div>
         </div>
     </main>
+    <div class="fixed-footer">
+        <small>
+            <span class="copyright-symbol">©</span>
+            <span class="full-text"> Bicutan Medical Center Inc. All rights reserved.</span>
+        </small>
+    </div>
 </div>
 
 <script>
@@ -1012,51 +1026,6 @@ function s2ab(s) {
     return buf;
 }
 
-function reinitializeEventListeners() {
-    const toggleBtn = document.getElementById("toggleBtn");
-    const sidebar = document.getElementById("sidebar");
-    const content = document.getElementById("content");
-    let isSidebarVisible = true;
-
-    toggleBtn.addEventListener("click", () => {
-        isSidebarVisible = !isSidebarVisible;
-        if (isSidebarVisible) {
-            sidebar.classList.remove("hidden");
-            toggleBtn.style.left = "260px";
-            content.style.marginLeft = "270px";
-            content.style.marginRight = "0"; 
-            toggleBtn.textContent = "Hide";
-        } else {
-            sidebar.classList.add("hidden");
-            toggleBtn.style.left = "10px";
-            content.style.marginLeft = "auto"; 
-            content.style.marginRight = "auto"; 
-            toggleBtn.textContent = "Show";
-        }
-    });
-}
-
-const sidebar = document.getElementById("sidebar");
-const toggleBtn = document.getElementById("toggleBtn");
-const content = document.getElementById("content"); 
-let isSidebarVisible = true;
-
-toggleBtn.addEventListener("click", () => {
-    isSidebarVisible = !isSidebarVisible;
-    if (isSidebarVisible) {
-        sidebar.classList.remove("hidden");
-        toggleBtn.style.left = "260px";
-        content.style.marginLeft = "270px"; 
-        content.style.marginRight = "0"; 
-        toggleBtn.textContent = "Hide";
-    } else {
-        sidebar.classList.add("hidden");
-        toggleBtn.style.left = "10px";
-        content.style.marginLeft = "auto"; 
-        content.style.marginRight = "auto"; 
-        toggleBtn.textContent = "Show";
-    }
-});
 </script>
 
 </body>

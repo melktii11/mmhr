@@ -81,6 +81,8 @@ $files = $conn->query("SELECT * FROM uploaded_files");
 $totalFiles = $files->num_rows;
 //$maxFilesAllowed = 10; // Set limit here
 
+$showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
+
 ?>
 
 <!DOCTYPE html>
@@ -142,7 +144,6 @@ $totalFiles = $files->num_rows;
                     </div>
                 </div>
             </div>
-            <a href="https://bicutanmed.com/about-us" class="btrdy">About Us</a>
             <a href="logout.php" class="logout-link">
                 <img src="css/power-off.png" alt="logout" class="logout-icon">
             </a>
@@ -160,11 +161,11 @@ $totalFiles = $files->num_rows;
     </div>
 
     <div class="container">
-    <main class="main-content">
+        <main class="main-content">
         <section class="upload-section">
             <h2>Upload Excel File</h2>
-            <form action="upload.php" method="POST" enctype="multipart/form-data">
-                <input type="file" name="excelFile" accept=".xlsx, .xls" class="file-input">
+            <form id="uploadForm" action="upload.php" method="POST" enctype="multipart/form-data" onsubmit="return showLoading()">
+                <input type="file" name="excelFile" accept=".xlsx, .xls" class="file-input" required>
                 <button type="submit" class="btn-upload">Upload</button>
             </form>
         </section>
@@ -183,7 +184,50 @@ $totalFiles = $files->num_rows;
         </section>
 
     </main>
+    <div class="fixed-footer">
+        <small>
+            <span class="copyright-symbol">©</span>
+            <span class="full-text"> Bicutan Medical Center Inc. All rights reserved.</span>
+        </small>
+    </div>
+
 </body>
+
+<?php if ($showSuccess): ?>
+<div style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #d4edda;
+    color: #155724;
+    padding: 20px 30px;
+    border: 2px solid #c3e6cb;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    font-size: 1.1rem;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    animation: fadeOut .3s ease-in 3s forwards;
+    opacity: 1;
+">
+    ✅ <strong>Success!</strong><br>Your file was uploaded successfully.
+</div>
+<?php endif; ?>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay">
+    <img src="css/loading.gif" alt="Loading..." width="170" height="170">
+    <div class="loading-text">Uploading, please wait...</div>
+</div>
+
+<script>
+        function showLoading() {
+        document.getElementById("loadingOverlay").style.display = "flex";
+        return true; // allow the form to submit
+    }
+</script>
 
 <script>
 

@@ -142,7 +142,6 @@ if ($selected_file_id && $selected_sheet) {
                     </div>
                 </div>
             </div>
-            <a href="https://bicutanmed.com/about-us" class="btrdy">About Us</a>
             <a href="logout.php" class="logout-link">
                 <img src="css/power-off.png" alt="logout" class="logout-icon">
             </a>
@@ -182,7 +181,7 @@ if ($selected_file_id && $selected_sheet) {
     <form method="GET" class="mb-4" id="filterForm">
         <div class="sige">
             <label for="file_id">Select File:</label>
-            <select name="file_id" id="file_id" onchange="document.getElementById('filterForm').submit()" class="form-select w-25 d-inline-block mb-2">
+            <select class="pass" name="file_id" id="file_id" onchange="document.getElementById('filterForm').submit()" class="form-select w-25 d-inline-block mb-2">
                 <option value="">-- Choose File --</option>
                 <?php foreach ($files as $file): ?>
                     <option value="<?= $file['id'] ?>" <?= $selected_file_id == $file['id'] ? 'selected' : '' ?>>
@@ -193,7 +192,7 @@ if ($selected_file_id && $selected_sheet) {
 
             <?php if ($selected_file_id): ?>
                 <label for="sheet">Select Sheet:</label>
-                <select name="sheet" id="sheet" onchange="document.getElementById('filterForm').submit()" class="form-select w-25 d-inline-block mb-2">
+                <select class="col" name="sheet" id="sheet" onchange="document.getElementById('filterForm').submit()" class="form-select w-25 d-inline-block mb-2">
                     <option value="" disabled <?= $selected_sheet ? '' : 'selected' ?>>Select Month</option>
                     <?php foreach ($sheets as $sheet): ?>
                         <option value="<?= $sheet ?>" <?= $sheet === $selected_sheet ? 'selected' : '' ?>>
@@ -238,6 +237,13 @@ if ($selected_file_id && $selected_sheet) {
     </div>
 </main>
 </body>
+
+<div class="fixed-footer">
+    <small>
+        <span class="copyright-symbol">©</span>
+        <span class="full-text"> Bicutan Medical Center Inc. All rights reserved.</span>
+    </small>
+</div>
 
 <script>
     

@@ -275,7 +275,7 @@ table.table {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-left: 64.5%;
+    padding-left: 70.2%;
     position: relative;
 }
 
@@ -393,4 +393,46 @@ table.table {
 
 .dropdown-submenu .submenu-content.show {
     display: block;
+}
+
+.col, .pass{
+    background-color: #a4c287;
+    font-family: Arial, Helvetica, sans-serif;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.fixed-footer {
+    position: fixed;
+    bottom: 5px;
+    left: 5px;
+    background-color: #A0C878;
+    color: #000000;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 1000;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: fit-content;
+    transition: width 0.6s ease;
+
+}
+
+.full-text {
+    max-width: 0;
+    opacity: 0;
+    transition: max-width 0.4s ease, opacity 0.3s ease;
+    overflow: hidden;
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.fixed-footer:hover .full-text {
+    max-width: 400px; /* enough space for full text */
+    opacity: 1;
+    margin-left: 5px;
 }

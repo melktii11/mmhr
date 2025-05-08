@@ -27,10 +27,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             exit;
         } else {
-            echo "<div class='alert alert-danger'>Invalid password.</div>";
+            echo "<div class='alert alert-danger' id='alert-box'>Invalid password.</div>";
         }
     } else {
-        echo "<div class='alert alert-danger'>No user found with that email.</div>";
+        echo "<div class='alert alert-danger' id='alert-box'>No user found with that email.</div>";
+
     }
     $stmt->close();
 }
@@ -48,19 +49,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="login-container">
         <h2>Login</h2>
         <form method="POST" method="GET">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+            <label for="email">👨‍💻 Email:</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email">
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+            <label for="password">🔑 Password:</label>
+            <input type="password" id="password" name="password" required placeholder="Enter your password">
 
             <button type="submit">Login</button>
-            <p>Don't have an account? <a href="register.php">Register here</a></p>
-            <p><a href="forgot_password.php">Forgot Password?</a></p>
         </form>
+        <br>
         <div class="footer">
             <small>&copy; Bicutan Medical Center Inc. All rights reserved.</small>
         </div>
     </div>
 </body>
+
+<script>
+    // Automatically hide alert after 3 seconds
+    window.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.getElementById("alert-box");
+        if (alertBox) {
+            setTimeout(() => {
+                alertBox.style.transition = "opacity 0.5s ease";
+                alertBox.style.opacity = "0";
+                setTimeout(() => alertBox.remove(), 500); // Remove from DOM
+            }, 3000); // 3 seconds
+        }
+    });
+</script>
+
 </html>

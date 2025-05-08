@@ -34,6 +34,7 @@ body.body-bg {
     align-items: center;
     text-align: center;
     color: #121212;
+    margin-left: -3%;
 }
 
 .container1{
@@ -66,6 +67,7 @@ th, tr, td {
 .nav-text h1 {
     font-size: 24px;
     margin: 0;
+    color: black;
 }
 
 .nav-text p {
@@ -204,7 +206,7 @@ thead{
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-left: 64%;
+    padding-left: 69.6%;
     position: relative;
 }
 
@@ -321,4 +323,63 @@ thead{
 
 .dropdown-submenu .submenu-content.show {
     display: block;
+}
+
+.fixed-footer {
+    position: fixed;
+    bottom: 5px;
+    left: 5px;
+    background-color: #A0C878;
+    color: #000000;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 1000;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: fit-content;
+    transition: width 0.6s ease;
+
+}
+
+.full-text {
+    max-width: 0;
+    opacity: 0;
+    transition: max-width 0.4s ease, opacity 0.3s ease;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.fixed-footer:hover .full-text {
+    max-width: 400px; /* enough space for full text */
+    opacity: 1;
+    margin-left: 5px;
+}
+
+.col, .pass{
+    background-color: #a4c287;
+    font-family: Arial, Helvetica, sans-serif;
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+@media print {
+    @page {
+        margin: 0;
+    }
+    body {
+        margin: 0;
+    }
+    .fixed-footer {
+        display: none;
+    }
+    .navbar, .sidebar, .nav-tools, .main-content, .container1, .container, aside {
+        display: none;
+    }
+    #summaryTable {
+        display: block;
+    }
 }
