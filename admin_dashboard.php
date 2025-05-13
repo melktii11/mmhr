@@ -250,7 +250,7 @@ $settings = $result->fetch_assoc();
     <a href="admin_dashboard.php" id="dashboard-link">Dashboard</a>
     <a href="#manage-users" id="manage-users-link">Manage Users</a>
     <a href="settings.php" id="settingsBtn">Settings</a>
-    <a href="logout.php">Logout</a>
+    <a href="javascript:void(0);" onclick="confirmLogout()">Logout</a>
   </div>
 
   <div class="main-content">
@@ -440,23 +440,23 @@ $settings = $result->fetch_assoc();
       </tr>
     </thead>
     <tbody>
-      <?php
-        $result = $conn->query("SELECT * FROM users");
-        while ($user = $result->fetch_assoc()) {
-          echo "<tr>
-                  <td>{$user['id']}</td>
-                  <td>{$user['username']}</td>
-                  <td>{$user['email']}</td>
-                  <td>{$user['role']}</td>
-                  <td>
-                    <a href='edit_user.php?id={$user['id']}' class='edit-btn'>Edit</a> | 
-                    <a href='delete_user.php?id={$user['id']}' class='delete-btn'>Delete</a>
-                  </td>
-                </tr>";
-        }
-      ?>
-    </tbody>
-  </table>
+  <?php
+    $result = $conn->query("SELECT * FROM users");
+    while ($user = $result->fetch_assoc()) {
+      echo "<tr>
+              <td>{$user['id']}</td>
+              <td>{$user['username']}</td>
+              <td>{$user['email']}</td>
+              <td>{$user['role']}</td>
+              <td>
+                <a href='edit_user.php?id={$user['id']}' class='edit-btn'>Edit</a> | 
+                <a href='#' class='delete-btn' onclick='confirmDelete({$user['id']})'>Delete</a>
+              </td>
+            </tr>";
+    }
+  ?>
+</tbody>
+    </table>
     </div>
   </div>
 
@@ -542,6 +542,63 @@ $settings = $result->fetch_assoc();
 </div>
   </div>
 </div>
+
+<!-- Confirmation Popup Modal -->
+ <div id="overlay" class="overlay" style="display:none;">
+  <div id="deleteModal" class="modal">
+    <div id="modalContent" class="modal-content">
+      <p>Are you sure you want to delete this user?</p>
+      <button id="confirmDeleteBtn" onclick="deleteUser()">Yes, Delete</button>
+      <button onclick="closeModal()">No</button>
+    </div>
+  </div>
+</div>
+
+<div id="overlayLogout" class="overlay-logout">
+  <div class="modal-logout">
+    <p>Are you sure you want to log out?</p>
+    <button onclick="logoutUser()">Yes, Logout</button>
+    <button onclick="closeLogoutModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+    let userIdToDelete = null; // This will store the user ID to be deleted
+
+  function confirmDelete(userId) {
+    userIdToDelete = userId;  // Set the user ID to be deleted
+    document.getElementById("overlay").style.display = "flex"; // Show the overlay and modal
+  }
+
+  function closeModal() {
+    document.getElementById("overlay").style.display = "none"; // Close the modal and overlay
+  }
+
+  function deleteUser() {
+    if (userIdToDelete !== null) {
+      window.location.href = 'delete_user.php?id=' + userIdToDelete; // Redirect to delete user
+    }
+  }
+
+  let logoutConfirmed = false;
+
+  // Show the confirmation modal when the admin clicks on the logout link
+  function confirmLogout() {
+    document.getElementById("overlayLogout").style.display = "flex"; // Show modal
+  }
+
+  // Hide the confirmation modal
+  function closeLogoutModal() {
+    document.getElementById("overlayLogout").style.display = "none"; // Hide modal
+  }
+
+  // Proceed with logout if confirmed
+  function logoutUser() {
+    window.location.href = 'logout.php'; // Redirect to logout page
+  }
+
+</script>
+
 
 <script>
   function toggleQuotaEdit() {

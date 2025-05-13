@@ -336,7 +336,8 @@ $summary = array_fill(1, 31, [
                     </div>
                 </div>
             </div>
-            <a href="logout.php" class="logout-link">
+            <a href="user-manual.php" class="btrdy">User Manual</a>
+            <a href="#" class="logout-link" onclick="confirmLogout(event)">
                 <img src="css/power-off.png" alt="logout" class="logout-icon">
             </a>
         </div>
@@ -354,11 +355,7 @@ $summary = array_fill(1, 31, [
 
 <aside>
     <div class="sidebar" id="sidebar">
-        <h3>Upload Excel File</h3>
-        <form action="upload.php" method="POST" enctype="multipart/form-data">
-            <input type="file" name="excelFile" accept=".xlsx, .xls">
-            <button type="submit" class="btn1 btn-success">Upload</button>
-        </form>
+        <h3>Menu</h3>
         <button class="btn btn-success no-print" onclick="window.print()">Print Table</button>
         <form action="display_summary.php" method="GET">
             <button type="submit" class="btn btn-primary btn-2">View MMHR Table</button>
@@ -406,7 +403,7 @@ $summary = array_fill(1, 31, [
                 <div class="form-group row mb-3">
                     <label class="col-sm-5 col-form-label">Municipality :</label>
                     <div class="col-sm-7">
-                        <input type="text" name="municipality">
+                        <input class="blank" type="text" name="municipality">
                     </div>
                 </div>
                 <div class="form-group row mb-3">
@@ -655,70 +652,61 @@ $summary = array_fill(1, 31, [
 </div>
 
 <script>
-
+function confirmLogout(event) {
+    event.preventDefault(); // Prevent default link behavior
+    if (confirm("⚠️ Are you sure you want to logout?")) {
+        window.location.href = "logout.php"; // Proceed with logout
+    }
+}
 
 function toggleDropdown(event) {
     event.preventDefault();
-    event.stopPropagation(); // Prevent it from closing immediately
+    var dropdown = event.currentTarget.nextElementSibling;
+    dropdown.classList.toggle("show");
 
-    const dropdown = event.target.closest('.dropdown');
-    const content = dropdown.querySelector('.dropdown-content');
+    var otherDropdowns = document.querySelectorAll(".dropdown-content");
+    otherDropdowns.forEach(function (otherDropdown) {
+        if (otherDropdown !== dropdown) {
+            otherDropdown.classList.remove("show");
+        }
+    });
 
-    // Toggle the clicked dropdown
-    content.classList.toggle('show');
+    var submenu = dropdown.querySelector(".submenu-content");
+    if (submenu) {
+        submenu.classList.remove("show");
+    }
 }
 
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    document.querySelectorAll('.dropdown-content').forEach(function(dropdown) {
-        if (!dropdown.parentElement.contains(event.target)) {
-            dropdown.classList.remove('show');
-        }
-    });
-
-    // Also close submenus
-    document.querySelectorAll('.submenu-content').forEach(function(submenu) {
-        if (!submenu.parentElement.contains(event.target)) {
-            submenu.classList.remove('show');
-        }
-    });
-});
-
-// Toggle submenu
 function toggleSubmenu(event) {
     event.preventDefault();
-    event.stopPropagation(); // Prevent outside click from closing it
+    event.stopPropagation(); // Prevents the main dropdown from closing
 
-    const submenu = event.target.nextElementSibling;
-    submenu.classList.toggle('show');
+    var submenu = event.currentTarget.nextElementSibling;
+    submenu.classList.toggle("show");
+
+    // Optionally close other submenus
+    var otherSubmenus = document.querySelectorAll(".submenu-content");
+    otherSubmenus.forEach(function (other) {
+        if (other !== submenu) {
+            other.classList.remove("show");
+        }
+    });
 }
 
-        const totalFiles = <?= $totalFiles ?>;
-    const maxFiles = <?= $maxFilesAllowed ?>;
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const form = document.querySelector('form[action="upload.php"]');
-        const fileInput = form.querySelector('input[type="file"]');
-
-        form.addEventListener('submit', (e) => {
-            const file = fileInput.files[0];
-            if (!file) return; // allow empty
-
-            if (totalFiles >= maxFiles) {
-                alert(`❌ Upload limit reached. Only ${maxFiles} files allowed.`);
-                e.preventDefault();
-                return;
-            }
-
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            if (file.size > maxSize) {
-                alert("❌ File is too large. Max size is 5MB.");
-                e.preventDefault();
-                return;
-            }
+document.addEventListener('click', function (event) {
+    if (!event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-content').forEach(function(dropdown) {
+            dropdown.classList.remove('show');
         });
-    });
+        document.querySelectorAll('.submenu-content').forEach(function(submenu) {
+            submenu.classList.remove('show');
+        });
+    }
+});
 
+</script>
+
+<script>
     function openOptionsPopup(title, description) {
     document.getElementById('popupTitle').innerText = title;
 
@@ -1049,8 +1037,125 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+function printTable() {
+    var printContents = document.getElementById("printable").innerHTML;
+    var originalContents = document.body.innerHTML;
 
-    document.getElementById("print-date").textContent = new Date().toLocaleDateString();
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+
+    reinitializeEventListeners();
+}
+
+function exportToExcel() {
+    var spinner = document.getElementById('loadingSpinner');
+    spinner.style.display = 'block'; 
+
+    setTimeout(function () {
+        var table = document.getElementById("summaryTable");
+
+        if (!table) {
+            console.log("Table not found!");
+            spinner.style.display = 'none'; 
+            return;
+        }
+
+        var ws = XLSX.utils.table_to_sheet(table);
+        const range = XLSX.utils.decode_range(ws['!ref']);
+
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cell_ref = XLSX.utils.encode_cell({ r: R, c: C });
+                const cell = ws[cell_ref];
+                if (!cell) continue;
+
+                if (!cell.s) cell.s = {};
+                cell.s.alignment = { horizontal: "center", vertical: "center" };
+
+                if (R <= 2) {
+                    cell.s.font = { bold: true };
+
+                    if (R === 0) {
+                        cell.s.fill = { fgColor: { rgb: "000000" } };
+                        cell.s.font.color = { rgb: "FFFFFF" };
+                    } else if (R === 1) {
+                        if (C === 0 || (C >= 10 && C <= 11)) {
+                            cell.s.fill = { fgColor: { rgb: "c7f9ff" } };
+                        } else {
+                            cell.s.fill = { fgColor: { rgb: "FFFF00" } };
+                        }
+                    } else if (R === 2) {
+                        if (C >= 0 && C <= 6) {
+                            cell.s.fill = { fgColor: { rgb: "008000" } };
+                            cell.s.font.color = { rgb: "FFFFFF" };
+                        } else if (C === 7) {
+                            cell.s.fill = { fgColor: { rgb: "000000" } };
+                            cell.s.font.color = { rgb: "FFFFFF" };
+                        } else if (C === 8) {
+                            cell.s.fill = { fgColor: { rgb: "c7f9ff" } };
+                        } else if (C === 9 || C === 10) {
+                            cell.s.fill = { fgColor: { rgb: "FFA500" } };
+                        } else if (C === 11 || C === 12) {
+                            cell.s.fill = { fgColor: { rgb: "0000FF" } };
+                            cell.s.font.color = { rgb: "FFFFFF" };
+                        }
+                    }
+                }
+            }
+        }
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "MMHR Summary");
+
+        var wbout = XLSX.write(wb, {
+            bookType: "xlsx",
+            type: "binary",
+            cellStyles: true
+        });
+
+        var blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+        var link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "MMHR_Summary.xlsx";
+        link.click();
+
+        spinner.style.display = 'none'; 
+    }, 100); 
+}
+
+function s2ab(s) {
+    var buf = new ArrayBuffer(s.length);
+    var view = new Uint8Array(buf);
+    for (var i = 0; i < s.length; i++) {
+        view[i] = s.charCodeAt(i) & 0xff;
+    }
+    return buf;
+}
+
+function downloadBackup() {
+    var spinner = document.getElementById('loadingSpinner');
+    spinner.style.display = 'block';
+
+    fetch('backup.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not OK');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "MMHR_Backup.sql"; 
+            link.click();
+            spinner.style.display = 'none';
+        })
+        .catch(error => {
+            console.error('There was a problem with the backup download:', error);
+            spinner.style.display = 'none'; 
+        });
+}
 </script>
 
 </html>

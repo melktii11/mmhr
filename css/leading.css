@@ -24,7 +24,7 @@ body.body-bg {
 .nav-container {
     display: flex;
     align-items: center;
-    width: 95%;
+    width: 100%;
     justify-content: space-between;
 }
 
@@ -95,9 +95,9 @@ p{
     flex-wrap: wrap;
     flex-direction: column;
     align-items: center;
-    width: 100%;
+    width: 95%;
     font-family: Arial, Helvetica, sans-serif;
-    margin-top: -22%;
+    margin-top: -17%;
     overflow-x: hidden;
 }
 
@@ -183,7 +183,7 @@ h2 {
     margin-top: 5mm;
     margin-left: 3.8mm;
     width: 200px;
-    height: 35vh;
+    height: 25vh;
     background-color: #A0C878;
     color: rgb(255, 255, 255);
     padding: 20px;
@@ -275,7 +275,7 @@ table.table {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-left: 70.2%;
+    padding-left: 53%;
     position: relative;
 }
 
@@ -435,4 +435,71 @@ table.table {
     max-width: 400px; /* enough space for full text */
     opacity: 1;
     margin-left: 5px;
+}
+
+th, tr, td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #000000;
+}
+
+th {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.nav-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: -11.9%; 
+}
+
+@media print{
+    .navbar, 
+    .sidebar, 
+    .nav-tools, 
+    .fixed-footer, 
+    .col, .pass, 
+    .sidebar-section,
+    .upload-section, 
+    .select-section, 
+    aside, label {
+        display: none;
+    }
+
+    .fixed-footer{
+        color: white;
+        background-color: #ffffff;
+    }
+
+    .main-content {
+        padding: 0;
+        margin-top: 0;
+    }
+
+    .upload-section, .select-section, .sidebar-section {
+        width: 100%;
+        margin: 0;
+        box-shadow: none;
+    }
+
+    table.table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #000000;
+    }
+    th {
+        background-color: #000000;
+        color: #ffffff;
+    }
+}
+
+
+.dropdown-content, .dropdown-submenu{
+    font-family: Arial, Helvetica, sans-serif;
 }

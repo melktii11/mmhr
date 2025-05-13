@@ -4,6 +4,7 @@ body.body-bg {
     background-size: cover;
     background-repeat: no-repeat;
     font-family: Arial, sans-serif;
+    background-attachment: fixed;
     margin: 0;
     padding: 0;
     color: #333;
@@ -168,11 +169,18 @@ h2 {
     transition: background-color 0.5s ease;
 }
 
+.nav-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: -6%;
+}
+
 .nav-tools {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-left: 71.5%;
+    padding-left: 60%;
     position: relative;
 }
 
@@ -385,4 +393,12 @@ h2 {
     max-width: 400px; /* enough space for full text */
     opacity: 1;
     margin-left: 5px;
+}
+
+.note-form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 5px;
+    text-align: center;
 }

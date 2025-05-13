@@ -139,7 +139,7 @@ if (isset($_FILES['excelFile'])) {
                 $batchData[] = "($fileId, '$sheetName', '$admissionDate', '$dischargeDate', '$memberCategory', '$patientName')";
 
                 if (!empty($icd10)) {
-                    $leadingCausesData[] = "($fileId, '$patientName', '$icd10', '$sheetName', '$memberCategory')";
+                    $leadingCausesData[] = "($fileId, '$patientName', '$icd10', '$sheetName')";
                 }
             }
 
@@ -156,7 +156,7 @@ if (isset($_FILES['excelFile'])) {
             }
 
             if (count($leadingCausesData) >= 500) {
-                $query = "INSERT INTO leading_causes (file_id, patient_name, icd_10, sheet_name, category) VALUES " . implode(',', $leadingCausesData);
+                $query = "INSERT INTO leading_causes (file_id, patient_name, icd_10, sheet_name) VALUES " . implode(',', $leadingCausesData);
             }
         }
 
@@ -172,7 +172,7 @@ if (isset($_FILES['excelFile'])) {
         }
 
         if (!empty($leadingCausesData)) {
-            $query = "INSERT INTO leading_causes (file_id, patient_name, icd_10, sheet_name, category) VALUES " . implode(',', $leadingCausesData);
+            $query = "INSERT INTO leading_causes (file_id, patient_name, icd_10, sheet_name) VALUES " . implode(',', $leadingCausesData);
             $conn->query($query);
         }
     }

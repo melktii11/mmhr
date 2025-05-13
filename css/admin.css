@@ -530,3 +530,88 @@ hr{
   margin: 20px 0;
   border: 1px solid #1a4d1d;
 }
+
+  /* Delete User */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  /* Modal card style */
+  .modal {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    width: 300px;
+    text-align: center;
+  }
+
+  .modal-content p {
+    margin: 20px 0;
+  }
+
+  .modal-content button {
+    margin: 10px 5px;
+    padding: 10px;
+    background-color: #A0C878;
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .modal-content button:hover {
+    background-color: #1a4d1d;
+    transition: background-color 0.3s ease;
+    color: rgb(255, 255, 255);
+  }
+
+  
+/* Admin Logout */
+.overlay-logout {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Dark background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Ensure it's on top */
+  display: none; /* Hidden by default */
+}
+
+.modal-logout {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Card-like effect */
+  width: 300px;
+  text-align: center;
+}
+
+.modal-logout button {
+  margin: 10px 5px;
+  padding: 10px;
+  background-color: #A0C878;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-logout button:hover {
+  background-color: #1a4d1d;
+  transition: background-color 0.3s ease;
+  color: rgb(255, 255, 255);
+}

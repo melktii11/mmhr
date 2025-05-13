@@ -17,4 +17,19 @@ if (isset($_GET['id'])) {
     echo "<div class='alert alert-danger'>Invalid user ID.</div>";
     exit;
 }
+
+
+  if (isset($_GET['id'])) {
+      $userId = $_GET['id'];
+
+      echo "<script>
+              var confirmation = confirm('Are you sure you want to delete this user?');
+              if (confirmation) {
+                  window.location = 'delete_user_process.php?id={$userId}';
+              } else {
+                  window.location = 'admin_dashboard.php';
+              }
+            </script>";
+  }
+
 ?>

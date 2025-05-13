@@ -142,7 +142,8 @@ if ($selected_file_id && $selected_sheet) {
                     </div>
                 </div>
             </div>
-            <a href="logout.php" class="logout-link">
+            <a href="user-manual.php" class="btrdy">User Manual</a>
+            <a href="#" class="logout-link" onclick="confirmLogout(event)">
                 <img src="css/power-off.png" alt="logout" class="logout-icon">
             </a>
         </div>
@@ -160,11 +161,7 @@ if ($selected_file_id && $selected_sheet) {
 
 <aside>
     <div class="sidebar" id="sidebar">
-        <h3>Upload Excel File</h3>
-        <form action="upload.php" method="POST" enctype="multipart/form-data">
-            <input type="file" name="excelFile" accept=".xlsx, .xls">
-            <button type="submit" class="btn1 btn-success">Upload</button>
-        </form>
+        <h3>Menu</h3>
         <button class="btn btn-success no-print" onclick="window.print()">Print Table</button>
         <form action="display_summary.php" method="GET">
             <button type="submit" class="btn btn-primary btn-2">View MMHR Table</button>
@@ -246,69 +243,15 @@ if ($selected_file_id && $selected_sheet) {
 </div>
 
 <script>
-    
-function toggleDropdown(event) {
-    event.preventDefault();
-    event.stopPropagation(); // Prevent it from closing immediately
-
-    const dropdown = event.target.closest('.dropdown');
-    const content = dropdown.querySelector('.dropdown-content');
-
-    // Toggle the clicked dropdown
-    content.classList.toggle('show');
+function confirmLogout(event) {
+    event.preventDefault(); // Prevent default link behavior
+    if (confirm("⚠️ Are you sure you want to logout?")) {
+        window.location.href = "logout.php"; // Proceed with logout
+    }
 }
+</script>
 
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    document.querySelectorAll('.dropdown-content').forEach(function(dropdown) {
-        if (!dropdown.parentElement.contains(event.target)) {
-            dropdown.classList.remove('show');
-        }
-    });
-
-    // Also close submenus
-    document.querySelectorAll('.submenu-content').forEach(function(submenu) {
-        if (!submenu.parentElement.contains(event.target)) {
-            submenu.classList.remove('show');
-        }
-    });
-});
-
-// Toggle submenu
-function toggleSubmenu(event) {
-    event.preventDefault();
-    event.stopPropagation(); // Prevent outside click from closing it
-
-    const submenu = event.target.nextElementSibling;
-    submenu.classList.toggle('show');
-}
-
-        const totalFiles = <?= $totalFiles ?>;
-    const maxFiles = <?= $maxFilesAllowed ?>;
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const form = document.querySelector('form[action="upload.php"]');
-        const fileInput = form.querySelector('input[type="file"]');
-
-        form.addEventListener('submit', (e) => {
-            const file = fileInput.files[0];
-            if (!file) return; // allow empty
-
-            if (totalFiles >= maxFiles) {
-                alert(`❌ Upload limit reached. Only ${maxFiles} files allowed.`);
-                e.preventDefault();
-                return;
-            }
-
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            if (file.size > maxSize) {
-                alert("❌ File is too large. Max size is 5MB.");
-                e.preventDefault();
-                return;
-            }
-        });
-    });
-
+<script>
     function openOptionsPopup(title, description) {
     document.getElementById('popupTitle').innerText = title;
 
@@ -638,8 +581,61 @@ window.addEventListener('DOMContentLoaded', () => {
             alert(`✅ Maintenance Completed!\nAll tables optimized.\n🧹 ${deleted} old backup files deleted.`);
         }
     });
-
-
 </script>
 
+
+<script>
+function confirmLogout(event) {
+    event.preventDefault(); // Prevent default link behavior
+    if (confirm("⚠️ Are you sure you want to logout?")) {
+        window.location.href = "logout.php"; // Proceed with logout
+    }
+}
+
+function toggleDropdown(event) {
+    event.preventDefault();
+    var dropdown = event.currentTarget.nextElementSibling;
+    dropdown.classList.toggle("show");
+
+    var otherDropdowns = document.querySelectorAll(".dropdown-content");
+    otherDropdowns.forEach(function (otherDropdown) {
+        if (otherDropdown !== dropdown) {
+            otherDropdown.classList.remove("show");
+        }
+    });
+
+    var submenu = dropdown.querySelector(".submenu-content");
+    if (submenu) {
+        submenu.classList.remove("show");
+    }
+}
+
+function toggleSubmenu(event) {
+    event.preventDefault();
+    event.stopPropagation(); // Prevents the main dropdown from closing
+
+    var submenu = event.currentTarget.nextElementSibling;
+    submenu.classList.toggle("show");
+
+    // Optionally close other submenus
+    var otherSubmenus = document.querySelectorAll(".submenu-content");
+    otherSubmenus.forEach(function (other) {
+        if (other !== submenu) {
+            other.classList.remove("show");
+        }
+    });
+}
+
+document.addEventListener('click', function (event) {
+    if (!event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-content').forEach(function(dropdown) {
+            dropdown.classList.remove('show');
+        });
+        document.querySelectorAll('.submenu-content').forEach(function(submenu) {
+            submenu.classList.remove('show');
+        });
+    }
+});
+
+</script>
 </html>

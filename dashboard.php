@@ -101,6 +101,7 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                 <h1>BicutanMed</h1>
                 <p>Caring For Life</p>
             </div>
+           
             <!--<div class="nav-links">
                 <a href="dashboard.php">Home</a>
                 <a href="#">Maintenance</a>
@@ -144,7 +145,8 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                     </div>
                 </div>
             </div>
-            <a href="logout.php" class="logout-link">
+            <a href="user-manual.php" class="btrdy" >User Manual</a>
+            <a href="#" class="logout-link" onclick="confirmLogout(event)">
                 <img src="css/power-off.png" alt="logout" class="logout-icon">
             </a>
         </div>
@@ -180,6 +182,96 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                     <?php endwhile; ?>
                 </select>
                 <button type="submit" class="btn-submit">Load Sheets</button>
+            </form>
+        </section>
+
+        <section class="select-section">
+            <form class="note-form">
+                <h2>Note:</h2>
+                <p><b>Please ensure that you are using the correct Excel file format. 
+                    While other columns can vary, the specified columns for each sheet must remain consistent; otherwise, the system may not display the results accurately.</b></p>
+                <p>Example:</p>
+
+                <!-- Monthly Sheet -->
+                <table border="1" cellpadding="5" cellspacing="0">
+                    <caption><strong>For Monthly Sheet: Example Sheet Month of April</strong></caption>
+                    <thead>
+                        <tr>
+                            <th>C</th>
+                            <th>D</th>
+                            <th>F</th>
+                            <th>L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Date or Date Admitted</td>
+                            <td>Discharges</td>
+                            <td>Name of Patients</td>
+                            <td>Member's Category</td>
+                        </tr>
+                        <tr>
+                            <td>04/09/2025</td>
+                            <td>04/15/2025</td>
+                            <td>Dela Cruz, Juan P.</td>
+                            <td>Formal-Private</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+
+                <!-- Admission Sheet -->
+                <table border="1" cellpadding="5" cellspacing="0">
+                    <caption><strong>For Admission Sheet: Example Admission Sheet for Month of April</strong></caption>
+                    <thead>
+                        <tr>
+                            <th>D</th>
+                            <th>H</th>
+                            <th>K</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Patient Name</td>
+                            <td>Admission Date</td>
+                            <td>Member's Category</td>
+                        </tr>
+                        <tr>
+                            <td>Santos, Maria L.</td>
+                            <td>04/24/2025</td>
+                            <td>Senior Citizen</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+
+                <!-- Discharges Sheet -->
+                <table border="1" cellpadding="5" cellspacing="0">
+                    <caption><strong>For Discharges Sheet: Example Discharge Sheet for Month of April</strong></caption>
+                    <thead>
+                        <tr>
+                            <th>A</th>
+                            <th>J</th>
+                            <th>L</th>
+                            <th>T</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Patient Name</td>
+                            <td>Date Admitted</td>
+                            <td>Date Discharge</td>
+                            <td>Member's Category</td>
+                        </tr>
+                        <tr>
+                            <td>Reyes, Pedro A.</td>
+                            <td>04/15/2025</td>
+                            <td>04/20/2025</td>
+                            <td>Self Earning Individual</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>For any issues, please contact the IT department.</p>
             </form>
         </section>
 
@@ -227,72 +319,65 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
         document.getElementById("loadingOverlay").style.display = "flex";
         return true; // allow the form to submit
     }
+
+        function confirmLogout(event) {
+        event.preventDefault(); // Prevent default link behavior
+        if (confirm("⚠️ Are you sure you want to logout?")) {
+            window.location.href = "logout.php"; // Proceed with logout
+        }
+    }
+
 </script>
 
 <script>
-
 function toggleDropdown(event) {
     event.preventDefault();
-    event.stopPropagation(); // Prevent it from closing immediately
+    var dropdown = event.currentTarget.nextElementSibling;
+    dropdown.classList.toggle("show");
 
-    const dropdown = event.target.closest('.dropdown');
-    const content = dropdown.querySelector('.dropdown-content');
+    var otherDropdowns = document.querySelectorAll(".dropdown-content");
+    otherDropdowns.forEach(function (otherDropdown) {
+        if (otherDropdown !== dropdown) {
+            otherDropdown.classList.remove("show");
+        }
+    });
 
-    // Toggle the clicked dropdown
-    content.classList.toggle('show');
+    var submenu = dropdown.querySelector(".submenu-content");
+    if (submenu) {
+        submenu.classList.remove("show");
+    }
 }
 
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    document.querySelectorAll('.dropdown-content').forEach(function(dropdown) {
-        if (!dropdown.parentElement.contains(event.target)) {
-            dropdown.classList.remove('show');
-        }
-    });
-
-    // Also close submenus
-    document.querySelectorAll('.submenu-content').forEach(function(submenu) {
-        if (!submenu.parentElement.contains(event.target)) {
-            submenu.classList.remove('show');
-        }
-    });
-});
-
-// Toggle submenu
 function toggleSubmenu(event) {
     event.preventDefault();
-    event.stopPropagation(); // Prevent outside click from closing it
+    event.stopPropagation(); // Prevents the main dropdown from closing
 
-    const submenu = event.target.nextElementSibling;
-    submenu.classList.toggle('show');
+    var submenu = event.currentTarget.nextElementSibling;
+    submenu.classList.toggle("show");
+
+    // Optionally close other submenus
+    var otherSubmenus = document.querySelectorAll(".submenu-content");
+    otherSubmenus.forEach(function (other) {
+        if (other !== submenu) {
+            other.classList.remove("show");
+        }
+    });
 }
 
-        const totalFiles = <?= $totalFiles ?>;
-    const maxFiles = <?= $maxFilesAllowed ?>;
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const form = document.querySelector('form[action="upload.php"]');
-        const fileInput = form.querySelector('input[type="file"]');
-
-        form.addEventListener('submit', (e) => {
-            const file = fileInput.files[0];
-            if (!file) return; // allow empty
-
-            if (totalFiles >= maxFiles) {
-                alert(`❌ Upload limit reached. Only ${maxFiles} files allowed.`);
-                e.preventDefault();
-                return;
-            }
-
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            if (file.size > maxSize) {
-                alert("❌ File is too large. Max size is 5MB.");
-                e.preventDefault();
-                return;
-            }
+document.addEventListener('click', function (event) {
+    if (!event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-content').forEach(function(dropdown) {
+            dropdown.classList.remove('show');
         });
-    });
+        document.querySelectorAll('.submenu-content').forEach(function(submenu) {
+            submenu.classList.remove('show');
+        });
+    }
+});
 
+</script>
+
+<script>
     function openOptionsPopup(title, description) {
     document.getElementById('popupTitle').innerText = title;
 
