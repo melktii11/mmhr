@@ -79,27 +79,28 @@ body.body-bg {
 .main-content {
     padding: 40px;
     display: flex;
-    gap: 10px;
+    gap: 20px;
     justify-content: center;
     flex-wrap: wrap;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row; /* ✅ changed from column */
+    align-items: flex-start; /* ✅ better alignment for cards */
     width: 100%;
 }
 
 /* Sections */
-.upload-section, .select-section, .sidebar-section {
-    background-color: rgba(151, 229, 135, 0.9);
+.upload-section, .select-section {
+    background-color: rgba(151, 229, 135);
     padding: 30px;
     border-radius: 10px;
-    width: 700px;
+    width: 650px; /* ✅ reasonable width for side-by-side */
     margin-top: 50px;
     margin-bottom: auto;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-height: 230px;
 }
 
-.upload-section {
-    width: 30%;
+.upload-section{
+    min-height: 190px;
 }
 
 .btn-success, .btn-primary {
@@ -401,4 +402,22 @@ h2 {
     gap: 5px;
     margin-top: 5px;
     text-align: center;
+}
+
+.note-section {
+    background-color: rgba(151, 229, 135);
+    padding: 20px;
+    border-radius: 10px;
+    width: 700px;
+    margin-top: 85px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.sections{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
 }

@@ -1,6 +1,7 @@
 <?php
 include 'config.php';
 
+
 if (isset($_GET['action']) && $_GET['action'] === 'version') {
     $version = 'MMHR Census v1.0.0';
     $lastUpdated = 'April 29, 2025';
@@ -104,8 +105,6 @@ $selected_sheet_1 = isset($_GET['sheet_1']) ? $_GET['sheet_1'] : '';
 $selected_sheet_2 = isset($_GET['sheet_2']) ? $_GET['sheet_2'] : '';
 $selected_sheet_3 = isset($_GET['sheet_3']) ? $_GET['sheet_3'] : '';
 
-$all_patient_data = [];
-
 $all_sheets_query = "SELECT admission_date, discharge_date, member_category, sheet_name 
                      FROM patient_records 
                      WHERE file_id = $selected_file_id";
@@ -132,68 +131,95 @@ $summary = array_fill(1, 31, [
         $selected_year = date('Y');
     }
 
-    #column 1-5
-    while ($row = $all_sheets_result->fetch_assoc()) {
-        $admit = DateTime::createFromFormat('Y-m-d', trim($row['admission_date']))->setTime(0, 0, 0);
-        $discharge = DateTime::createFromFormat('Y-m-d', trim($row['discharge_date']))->setTime(0, 0, 0);
-        $category = trim(strtolower($row['member_category']));
-    
-        $month_numbers = [
+    $month_numbers = [
             'JANUARY' => 1, 'FEBRUARY' => 2, 'MARCH' => 3, 'APRIL' => 4, 'MAY' => 5, 'JUNE' => 6,
             'JULY' => 7, 'AUGUST' => 8, 'SEPTEMBER' => 9, 'OCTOBER' => 10, 'NOVEMBER' => 11, 'DECEMBER' => 12
         ];
     
-        $selected_month_name = strtoupper($selected_sheet_1);
-        if (!isset($month_numbers[$selected_month_name])) {
-            continue;
-        }
-        $selected_month = $month_numbers[$selected_month_name];
-    
+        if (!empty($selected_sheet_1) && isset($month_numbers[strtoupper($selected_sheet_1)])) {
+            $selected_month_name_1 = strtoupper($selected_sheet_1);
+            $selected_month = $month_numbers[$selected_month_name_1];
+        
+            $future_sheets = [];
+            $sheet_query = "SELECT DISTINCT sheet_name FROM patient_records WHERE file_id = $selected_file_id";
+            $sheet_result = $conn->query($sheet_query);
+        
+            while ($sheet_row = $sheet_result->fetch_assoc()) {
+                $sheet_name = strtoupper($sheet_row['sheet_name']);
+                if (isset($month_numbers[$sheet_name]) && $month_numbers[$sheet_name] >= $selected_month) {
+                    $future_sheets[] = $sheet_name;
+                }
+            }
+
+    #column 1-5
+    // Step 2: Process records from current and future sheets
+foreach ($future_sheets as $sheet_name) {
+    $query = "SELECT admission_date, discharge_date, member_category FROM patient_records 
+              WHERE file_id = $selected_file_id AND sheet_name = '$sheet_name'";
+    $result = $conn->query($query);
+       
         $first_day_of_month = new DateTime("$selected_year-$selected_month-01");
         $last_day_of_month = new DateTime("$selected_year-$selected_month-" . cal_days_in_month(CAL_GREGORIAN, $selected_month, $selected_year));  
-    
-        if ($admit == $discharge) {
-            continue;
-        }
-    
-        // If the patient has days in this selected month
-        if ($discharge >= $first_day_of_month && $admit <= $last_day_of_month) {
-            $startDay = max($first_day_of_month, $admit)->format('d');
-            $endDay = min($last_day_of_month, (clone $discharge)->modify('-1 day'))->format('d');
-    
-            for ($day = (int)$startDay; $day <= (int)$endDay; $day++) {
-                if (!isset($summary[$day])) {
-                    $summary[$day] = [
-                        'govt' => 0, 'private' => 0, 'self_employed' => 0, 'ofw' => 0,
-                        'owwa' => 0, 'sc' => 0, 'pwd' => 0, 'indigent' => 0, 'pensioners' => 0
-                    ];
-                }
-    
-                // Categorizing patients
-                if (stripos($category, 'formal-government') !== false || stripos($category, 'sponsored- local govt unit') !== false) {
-                    $summary[$day]['govt'] += 1;
-                } elseif (stripos($category, 'formal-private') !== false) {
-                    $summary[$day]['private'] += 1;
-                } elseif (stripos($category, 'self earning individual') !== false || stripos($category, 'indirect contributor') !== false
-                    || stripos($category, 'informal economy- informal sector') !== false) {
-                    $summary[$day]['self_employed'] += 1;
-                } elseif (stripos($category, 'migrant worker') !== false) {
-                    $summary[$day]['ofw'] += 1;
-                } elseif (stripos($category, 'direct contributor') !== false) {
-                    $summary[$day]['owwa'] += 1;
-                } elseif (stripos($category, 'senior citizen') !== false) {
-                    $summary[$day]['sc'] += 1;
-                } elseif (stripos($category, 'pwd') !== false) {
-                    $summary[$day]['pwd'] += 1;
-                } elseif (stripos($category, 'indigent') !== false || stripos($category, 'sponsored- pos financially incapable') !== false
-                    || stripos($category, '4ps/mcct') !== false) {
-                    $summary[$day]['indigent'] += 1;
-                } elseif (stripos($category, 'lifetime member') !== false) {
-                    $summary[$day]['pensioners'] += 1;
-                }
+        $days_in_month = (int)$last_day_of_month->format('d');
+
+    while ($row = $result->fetch_assoc()) {
+        $admit = DateTime::createFromFormat('Y-m-d', trim($row['admission_date']));
+        $discharge = DateTime::createFromFormat('Y-m-d', trim($row['discharge_date']));
+
+        if (!$admit || !$discharge) continue; // Skip invalid dates
+
+        $admit->setTime(0, 0, 0);
+        $discharge->setTime(0, 0, 0);
+
+        // Skip if same day admit/discharge
+        if ($admit == $discharge) continue;
+
+        // Skip if completely outside selected month
+        if ($discharge <= $first_day_of_month || $admit > $last_day_of_month) continue;
+
+        // Clean category safely
+        $category = isset($row['member_category']) ? strtolower(trim($row['member_category'])) : '';
+        if ($category === '') continue;
+
+        // Determine overlap range (cutoff at midnight)
+        $startDay = (int)max($first_day_of_month, $admit)->format('d');
+        $endDay = (int)min($last_day_of_month, (clone $discharge)->modify('-1 day'))->format('d');
+
+        // Loop only within days of the selected month
+        for ($day = $startDay; $day <= $endDay; $day++) {
+            if ($day > $days_in_month) continue; // Prevent going to Day 31 in April, etc.
+
+            if (stripos($category, 'formal-government') !== false || stripos($category, 'sponsored- local govt unit') !== false) {
+                $summary[$day]['govt'] += 1;
+            } elseif (stripos($category, 'formal-private') !== false) {
+                $summary[$day]['private'] += 1;
+            } elseif (
+                stripos($category, 'self earning individual') !== false ||
+                stripos($category, 'indirect contributor') !== false ||
+                stripos($category, 'informal economy- informal sector') !== false
+            ) {
+                $summary[$day]['self_employed'] += 1;
+            } elseif (stripos($category, 'migrant worker') !== false) {
+                $summary[$day]['ofw'] += 1;
+            } elseif (stripos($category, 'direct contributor') !== false) {
+                $summary[$day]['owwa'] += 1;
+            } elseif (stripos($category, 'senior citizen') !== false) {
+                $summary[$day]['sc'] += 1;
+            } elseif (stripos($category, 'pwd') !== false) {
+                $summary[$day]['pwd'] += 1;
+            } elseif (
+                stripos($category, 'indigent') !== false ||
+                stripos($category, 'sponsored- pos financially incapable') !== false ||
+                stripos($category, '4ps/mcct') !== false
+            ) {
+                $summary[$day]['indigent'] += 1;
+            } elseif (stripos($category, 'lifetime member') !== false) {
+                $summary[$day]['pensioners'] += 1;
             }
         }
     }
+}
+        }
 
     #nhip column
     foreach ($summary as $day => $row) {

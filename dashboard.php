@@ -163,32 +163,33 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
     </div>
 
     <div class="container">
-        <main class="main-content">
-        <section class="upload-section">
-            <h2>Upload Excel File</h2>
-            <form id="uploadForm" action="upload.php" method="POST" enctype="multipart/form-data" onsubmit="return showLoading()">
-                <input type="file" name="excelFile" accept=".xlsx, .xls" class="file-input" required>
-                <button type="submit" class="btn-upload">Upload</button>
-            </form>
-        </section>
+        <div class="sections">
+            <main class="main-content">
+            <section class="upload-section">
+                <h2>Upload Excel File</h2>
+                <form id="uploadForm" action="upload.php" method="POST" enctype="multipart/form-data" onsubmit="return showLoading()">
+                    <input type="file" name="excelFile" accept=".xlsx, .xls" class="file-input" required>
+                    <button type="submit" class="btn-upload">Upload</button>
+                </form>
+            </section>
 
-        <section class="select-section">
-            <form action="display_summary.php" method="GET">
-                <h2>Select File & Sheet</h2>
-                <label for="file">Select File:</label>
-                <select name="file_id" id="file" class="file-dropdown">
-                    <?php while ($file = $files->fetch_assoc()): ?>
-                        <option value="<?= $file['id'] ?>"><?= $file['file_name'] ?></option>
-                    <?php endwhile; ?>
-                </select>
-                <button type="submit" class="btn-submit">Load Sheets</button>
-            </form>
-        </section>
-
-        <section class="select-section">
+            <section class="select-section">
+                <form action="display_summary.php" method="GET">
+                    <h2>Select File & Sheet</h2>
+                    <label for="file">Select File:</label>
+                    <select name="file_id" id="file" class="file-dropdown">
+                        <?php while ($file = $files->fetch_assoc()): ?>
+                            <option value="<?= $file['id'] ?>"><?= $file['file_name'] ?></option>
+                        <?php endwhile; ?>
+                    </select>
+                    <button type="submit" class="btn-submit">Load Sheets</button>
+                </form>
+            </section>
+        </div>
+        <section class="note-section">
             <form class="note-form">
                 <h2>Note:</h2>
-                <p><b>Please ensure that you are using the correct Excel file format. 
+                <p><b style="color: red;">⚠WARNING: Please ensure that you are using the correct Excel file format. 
                     While other columns can vary, the specified columns for each sheet must remain consistent; otherwise, the system may not display the results accurately.</b></p>
                 <p>Example:</p>
 
@@ -270,7 +271,7 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                             <td>Self Earning Individual</td>
                         </tr>
                     </tbody>
-                </table>
+                    </table>
                 <p>For any issues, please contact the IT department.</p>
             </form>
         </section>

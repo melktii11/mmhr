@@ -47,7 +47,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <div class="login-container">
-        <h2>Login</h2>
+            <div class="logo-container">
+                <img src="css/download-removebg-preview.png" alt="Logo" class="logo">
+                <h2>BICUTAN MEDICAL CENTER INC.</h2>
+            </div>
         <form method="POST" method="GET">
             <label for="email">👨‍💻 Email:</label>
             <input type="email" id="email" name="email" required placeholder="Enter your email">

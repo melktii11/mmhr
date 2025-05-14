@@ -528,7 +528,6 @@ $settings = $result->fetch_assoc();
     <hr>
   </form>
 </div>
-
 <!-- Audit Logs Settings -->
 <div class="section">
   <h3>Audit Logs</h3>

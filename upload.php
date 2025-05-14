@@ -87,7 +87,7 @@ if (isset($_FILES['excelFile'])) {
         $normalizedSheetName = strtoupper(trim($sheetName));
 
         if (preg_match('/^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)$/', $normalizedSheetName)) {
-            $startRow = 3;
+            $startRow = 2;
             $colPatientName = "F"; 
             $colAdmissionDate = "C"; 
             $colDischargeDate = "D";
@@ -103,8 +103,8 @@ if (isset($_FILES['excelFile'])) {
         } elseif (stripos($sheetName, 'discharge') !== false) {
             $startRow = 3;
             $colPatientName = "A";
-            $colAdmissionDate = "K";
-            $colDischargeDate = "M";
+            $colAdmissionDate = "J";
+            $colDischargeDate = "L";
             $colCategory = "T";
             $tableName = "patient_records_3";
         } else {
