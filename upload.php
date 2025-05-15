@@ -92,7 +92,8 @@ if (isset($_FILES['excelFile'])) {
             $colAdmissionDate = "C"; 
             $colDischargeDate = "D";
             $colMemberCategory = "L";
-            $colICD10 = "P"; 
+            $colICD10 = "P";
+            $colrvs_code = "R";
             $tableName = "patient_records";
         } elseif (stripos($sheetName, 'admission') !== false) {
             $startRow = 9;
@@ -135,11 +136,13 @@ if (isset($_FILES['excelFile'])) {
             } else {
                 $memberCategory = trim($sheet->getCell("{$colMemberCategory}$rowIndex")->getValue());
                 $icd10 = trim($sheet->getCell("{$colICD10}$rowIndex")->getValue());
+                $rvs_code = trim($sheet->getCell("{$colrvs_code}$rowIndex")->getValue());
+                $rvs_escaped = mysqli_real_escape_string($conn, $rvs_code);
 
                 $batchData[] = "($fileId, '$sheetName', '$admissionDate', '$dischargeDate', '$memberCategory', '$patientName')";
 
                 if (!empty($icd10)) {
-                    $leadingCausesData[] = "($fileId, '$patientName', '$icd10', '$sheetName')";
+                    $leadingCausesData[] = "($fileId, '$patientName', '$icd10', '$sheetName', '$rvs_escaped')";
                 }
             }
 
@@ -156,7 +159,7 @@ if (isset($_FILES['excelFile'])) {
             }
 
             if (count($leadingCausesData) >= 500) {
-                $query = "INSERT INTO leading_causes (file_id, patient_name, icd_10, sheet_name) VALUES " . implode(',', $leadingCausesData);
+                $query = "INSERT INTO leading_causes (file_id, patient_name, icd_10, sheet_name, rvs_code) VALUES " . implode(',', $leadingCausesData);
             }
         }
 
@@ -172,7 +175,7 @@ if (isset($_FILES['excelFile'])) {
         }
 
         if (!empty($leadingCausesData)) {
-            $query = "INSERT INTO leading_causes (file_id, patient_name, icd_10, sheet_name) VALUES " . implode(',', $leadingCausesData);
+            $query = "INSERT INTO leading_causes (file_id, patient_name, icd_10, sheet_name, rvs_code) VALUES " . implode(',', $leadingCausesData);
             $conn->query($query);
         }
     }
