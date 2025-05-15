@@ -63,17 +63,18 @@ $icd_summary = [];
 
 if ($selected_file_id && $selected_sheet) {
     $query = "
-        SELECT 
-            lc.icd_10,
-            SUM(CASE WHEN pr.member_category = 'N/A' THEN 1 ELSE 0 END) AS non_nhip_total,
-            SUM(CASE WHEN pr.member_category != 'N/A' THEN 1 ELSE 0 END) AS nhip_total
-        FROM leading_causes lc
-        JOIN patient_records pr 
-            ON lc.patient_name = pr.patient_name AND lc.file_id = pr.file_id
-        WHERE lc.sheet_name = ? AND lc.file_id = ?
-        GROUP BY lc.icd_10
-        ORDER BY nhip_total DESC
-    ";
+    SELECT 
+        lc.icd_10,
+        GROUP_CONCAT(DISTINCT lc.rvs_code ORDER BY lc.rvs_code SEPARATOR ', ') AS rvs_codes,
+        SUM(CASE WHEN pr.member_category = 'N/A' THEN 1 ELSE 0 END) AS non_nhip_total,
+        SUM(CASE WHEN pr.member_category != 'N/A' THEN 1 ELSE 0 END) AS nhip_total
+    FROM leading_causes lc
+    JOIN patient_records pr 
+        ON lc.patient_name = pr.patient_name AND lc.file_id = pr.file_id
+    WHERE lc.sheet_name = ? AND lc.file_id = ?
+    GROUP BY lc.icd_10
+    ORDER BY nhip_total DESC
+";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("si", $selected_sheet, $selected_file_id);
     $stmt->execute();
@@ -209,6 +210,7 @@ if ($selected_file_id && $selected_sheet) {
                     <thead class="table-dark text-center">
                         <tr>
                             <th rowspan="2">ICD-10</th>
+                            <th rowspan="2">RVS CODE</th>
                             <th colspan="2">TOTAL</th>
                         </tr>
                         <tr>
@@ -220,6 +222,7 @@ if ($selected_file_id && $selected_sheet) {
                         <?php foreach ($icd_summary as $row): ?>
                             <tr>
                                 <td><?= htmlspecialchars($row['icd_10']) ?></td>
+                                <td><?= htmlspecialchars($row['rvs_codes']) ?></td>
                                 <td><?= $row['nhip_total'] ?></td>
                                 <td><?= $row['non_nhip_total'] ?></td>
                             </tr>
