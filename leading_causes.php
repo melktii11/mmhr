@@ -58,29 +58,53 @@ if ($selected_file_id) {
     }
 }
 
-// ICD summary query
+// ICD and RVS summary queries
 $icd_summary = [];
+$rvs_summary = [];
 
 if ($selected_file_id && $selected_sheet) {
+    // ICD Summary
     $query = "
-    SELECT 
-        lc.icd_10,
-        GROUP_CONCAT(DISTINCT lc.rvs_code ORDER BY lc.rvs_code SEPARATOR ', ') AS rvs_codes,
-        SUM(CASE WHEN pr.member_category = 'N/A' THEN 1 ELSE 0 END) AS non_nhip_total,
-        SUM(CASE WHEN pr.member_category != 'N/A' THEN 1 ELSE 0 END) AS nhip_total
-    FROM leading_causes lc
-    JOIN patient_records pr 
-        ON lc.patient_name = pr.patient_name AND lc.file_id = pr.file_id
-    WHERE lc.sheet_name = ? AND lc.file_id = ?
-    GROUP BY lc.icd_10
-    ORDER BY nhip_total DESC
-";
+        SELECT 
+            lc.icd_10,
+            SUM(CASE WHEN pr.member_category = 'N/A' THEN 1 ELSE 0 END) AS non_nhip_total,
+            SUM(CASE WHEN pr.member_category != 'N/A' THEN 1 ELSE 0 END) AS nhip_total
+        FROM leading_causes lc
+        JOIN patient_records pr 
+            ON lc.patient_name = pr.patient_name AND lc.file_id = pr.file_id
+        WHERE lc.sheet_name = ? AND lc.file_id = ?
+        GROUP BY lc.icd_10
+        ORDER BY nhip_total DESC
+    ";
+
     $stmt = $conn->prepare($query);
     $stmt->bind_param("si", $selected_sheet, $selected_file_id);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
         $icd_summary[] = $row;
+    }
+
+    // RVS Summary
+    $rvs_query = "
+        SELECT 
+            lc.rvs_code,
+            SUM(CASE WHEN pr.member_category = 'N/A' THEN 1 ELSE 0 END) AS non_nhip_total,
+            SUM(CASE WHEN pr.member_category != 'N/A' THEN 1 ELSE 0 END) AS nhip_total
+        FROM leading_causes lc
+        JOIN patient_records pr 
+            ON lc.patient_name = pr.patient_name AND lc.file_id = pr.file_id
+        WHERE lc.sheet_name = ? AND lc.file_id = ? AND lc.rvs_code IS NOT NULL AND lc.rvs_code != ''
+        GROUP BY lc.rvs_code
+        ORDER BY nhip_total DESC
+    ";
+
+    $stmt2 = $conn->prepare($rvs_query);
+    $stmt2->bind_param("si", $selected_sheet, $selected_file_id);
+    $stmt2->execute();
+    $result2 = $stmt2->get_result();
+    while ($row = $result2->fetch_assoc()) {
+        $rvs_summary[] = $row;
     }
 }
 ?>
@@ -202,27 +226,51 @@ if ($selected_file_id && $selected_sheet) {
         </div>
     </form>
 
-    <div class="table-responsive1" id="printable">
-    <?php if ($selected_sheet): ?>
-        <div class="table-wrapper text-center">
-            <div class="d-flex justify-content-center">
-                <table class="table table-bordered w-auto">
+    <div class="table-responsive" id="content">
+    <h2 class="text-center mt-4" style="margin-top:20px;">Leading Causes Summary</h2>
+
+    <form method="GET" class="mb-4" id="filterForm">
+        <div class="sige">
+            <label for="file_id">Select File:</label>
+            <select name="file_id" id="file_id" onchange="document.getElementById('filterForm').submit()" class="form-select w-25 d-inline-block mb-2">
+                <option value="">-- Choose File --</option>
+                <?php foreach ($files as $file): ?>
+                    <option value="<?= $file['id'] ?>" <?= $selected_file_id == $file['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($file['file_name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <?php if ($selected_file_id): ?>
+                <label for="sheet">Select Sheet:</label>
+                <select name="sheet" id="sheet" onchange="document.getElementById('filterForm').submit()" class="form-select w-25 d-inline-block mb-2">
+                    <option value="" disabled selected>Select Month</option>
+                    <?php foreach ($sheets as $sheet): ?>
+                        <option value="<?= $sheet ?>" <?= $sheet === $selected_sheet ? 'selected' : '' ?>>
+                            <?= $sheet ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            <?php endif; ?>
+        </div>
+    </form>
+
+    <div class="table-responsive1 d-flex justify-content-between gap-4" id="printable">
+        <?php if ($selected_sheet): ?>
+            <div class="table-wrapper w-50">
+                <h5 class="text-center">ICD-10 Summary</h5>
+                <table class="table table-bordered">
                     <thead class="table-dark text-center">
-                        <tr>
-                            <th rowspan="2">ICD-10</th>
-                            <th rowspan="2">RVS CODE</th>
-                            <th colspan="2">TOTAL</th>
-                        </tr>
-                        <tr>
-                            <th>NHIP</th>
-                            <th>NON-NHIP</th>
+                        <tr class="th1">
+                            <th style="background-color: black; color: white;">ICD-10</th>
+                            <th style="background-color: black; color: white;">NHIP</th>
+                            <th style="background-color: black; color: white;">NON-NHIP</th>
                         </tr>
                     </thead>
                     <tbody class="text-center">
                         <?php foreach ($icd_summary as $row): ?>
                             <tr>
                                 <td><?= htmlspecialchars($row['icd_10']) ?></td>
-                                <td><?= htmlspecialchars($row['rvs_codes']) ?></td>
                                 <td><?= $row['nhip_total'] ?></td>
                                 <td><?= $row['non_nhip_total'] ?></td>
                             </tr>
@@ -230,11 +278,33 @@ if ($selected_file_id && $selected_sheet) {
                     </tbody>
                 </table>
             </div>
-        </div>
-    <?php else: ?>
-        <p class="text-muted text-center">Please select a month to view ICD-10 summary.</p>
-    <?php endif; ?>
+
+            <div class="table-wrapper w-50">
+                <h5 class="text-center">RVS Code Summary</h5>
+                <table class="table table-bordered">
+                    <thead class="table-dark text-center">
+                        <tr class="th1">
+                            <th style="background-color: black; color: white;">RVS Code</th>
+                            <th style="background-color: black; color: white;">NHIP</th>
+                            <th style="background-color: black; color: white;">NON-NHIP</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        <?php foreach ($rvs_summary as $row): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($row['rvs_code']) ?></td>
+                                <td><?= $row['nhip_total'] ?></td>
+                                <td><?= $row['non_nhip_total'] ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <p class="text-muted">Please select a month to view ICD-10 and RVS summaries.</p>
+        <?php endif; ?>
     </div>
+</div>
 </main>
 </body>
 
