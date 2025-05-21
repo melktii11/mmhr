@@ -593,7 +593,10 @@ aside{
     .btn-success,
     .btn-primary,
     .logout-link,
-    .no-print {
+    .no-print,
+    .fixed-footer,
+    .copyright-symbol,
+    .full-text {
         display: none !important;
     }
 
