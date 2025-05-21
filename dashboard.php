@@ -1,11 +1,11 @@
 <?php
 session_start();
 if (!isset($_SESSION["user_id"])) {
-    header("Location: index.php"); // Redirect to login if not authenticated
+    header("Location: index.php"); 
     exit;
 }
 
-include 'config.php'; // Include database connection
+include 'config.php';
 
 if (isset($_GET['action']) && $_GET['action'] === 'version') {
     $version = 'MMHR Census v1.0.0';
@@ -13,9 +13,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'version') {
 
     echo "<script>
         if (confirm('🔖 Version Information:\\n\\nVersion: $version\\nLast Updated: $lastUpdated')) {
-            window.location.href = 'display_summary.php';
+            window.location.href = 'dashboard.php';
         } else {
-            window.location.href = 'display_summary.php';
+            window.location.href = 'dashboard.php';
         }
     </script>";
     exit;
@@ -37,7 +37,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'clear_data') {
 
     echo "<script>
         alert('✅ All data has been cleared successfully!\\n\\nTables cleared: " . implode(', ', $tablesToClear) . "');
-        window.location.href = 'display_summary.php';
+        window.location.href = 'dashboard.php';
     </script>";
     exit;
 }
@@ -71,16 +71,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'maintenance') {
         }
     }
 
-    header("Location: display_summary.php?maintenance=success&deleted=$deletedFiles");
+    header("Location: dashboard.php?maintenance=success&deleted=$deletedFiles");
     exit;
 }
 
-// Fetch uploaded files
 $files = $conn->query("SELECT * FROM uploaded_files");
-
 $totalFiles = $files->num_rows;
-//$maxFilesAllowed = 10; // Set limit here
-
 $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
 
 ?>
@@ -91,6 +87,7 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="icon" href="css/download-removebg-preview.png" type="image/png">
     <title>MMHR Census</title>
 </head>
 <body class="body-bg">
@@ -117,8 +114,8 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                     <div class="dropdown-content">
                         <a href="#" onclick="exportToExcel()" style="color:blue;">📊 Export Data</a>
                         <a href="#" onclick="downloadBackup()" style="color:blue;">💾 Download Backup</a>
-                        <a href="display_summary.php?action=maintenance" style="color:blue;">🛠️ Maintenance</a>
-                        <a href="display_summary.php?action=clear_data" onclick="confirmClearData(event)" style="color: red;">❌ Clear All Data</a>
+                        <a href="dashboard.php?action=maintenance" style="color:blue;">🛠️ Maintenance</a>
+                        <a href="dashboard.php?action=clear_data" onclick="confirmClearData(event)" style="color: red;">❌ Clear All Data</a>
                     </div>
                 </div>
 
@@ -146,7 +143,7 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                 </div>
             </div>
             <a href="user-manual.php" class="btrdy" >User Manual</a>
-            <a href="#" class="logout-link" onclick="confirmLogout(event)">
+            <a href="javascript:void(0);" onclick="confirmLogout()">
                 <img src="css/power-off.png" alt="logout" class="logout-icon">
             </a>
         </div>
@@ -189,15 +186,15 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
         <section class="note-section">
             <form class="note-form">
                 <h2>Note:</h2>
-                <p><b style="color: red;">⚠WARNING: Please ensure that you are using the correct Excel file format. 
-                    While other columns can vary, the specified columns for each sheet must remain consistent; otherwise, the system may not display the results accurately.</b></p>
-                <p>Example:</p>
-
-                <!-- Monthly Sheet -->
+                <p><b style="color:rgb(217 32 60);">⚠WARNING: Please ensure that you are using the correct Excel file format. 
+                    While other columns can vary, the specified columns for each sheet must remain consistent; otherwise, the system may not display the results accurately.
+                    <br><br> Addition: Please ensure that the starting row is also same format similar to this example format.</b></p>
+                <p><strong>Example:</strong></p>
                 <table border="1" cellpadding="5" cellspacing="0">
                     <caption><strong>For Monthly Sheet: Example Sheet Month of April</strong></caption>
                     <thead>
                         <tr>
+                            <td></td>
                             <th>C</th>
                             <th>D</th>
                             <th>F</th>
@@ -206,12 +203,14 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                     </thead>
                     <tbody>
                         <tr>
+                            <td>1</td>
                             <td>Date or Date Admitted</td>
                             <td>Discharges</td>
                             <td>Name of Patients</td>
                             <td>Member's Category</td>
                         </tr>
                         <tr>
+                            <td>2</td>
                             <td>04/09/2025</td>
                             <td>04/15/2025</td>
                             <td>Dela Cruz, Juan P.</td>
@@ -220,12 +219,11 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                     </tbody>
                 </table>
                 <br>
-
-                <!-- Admission Sheet -->
                 <table border="1" cellpadding="5" cellspacing="0">
-                    <caption><strong>For Admission Sheet: Example Admission Sheet for Month of April</strong></caption>
+                    <caption><strong>For Admission Sheet: Example Admission Sheet for Month of April (Admitting)</strong></caption>
                     <thead>
                         <tr>
+                            <td></td>
                             <th>D</th>
                             <th>H</th>
                             <th>K</th>
@@ -233,11 +231,13 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                     </thead>
                     <tbody>
                         <tr>
+                            <td>7</td>
                             <td>Patient Name</td>
                             <td>Admission Date</td>
                             <td>Member's Category</td>
                         </tr>
                         <tr>
+                            <td>8</td>
                             <td>Santos, Maria L.</td>
                             <td>04/24/2025</td>
                             <td>Senior Citizen</td>
@@ -245,12 +245,11 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                     </tbody>
                 </table>
                 <br>
-
-                <!-- Discharges Sheet -->
                 <table border="1" cellpadding="5" cellspacing="0">
-                    <caption><strong>For Discharges Sheet: Example Discharge Sheet for Month of April</strong></caption>
+                    <caption><strong>For Discharges Sheet: Example Discharge Sheet for Month of April (Billing)</strong></caption>
                     <thead>
                         <tr>
+                            <td></td>
                             <th>A</th>
                             <th>J</th>
                             <th>L</th>
@@ -259,12 +258,14 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
                     </thead>
                     <tbody>
                         <tr>
+                            <td>2</td>
                             <td>Patient Name</td>
                             <td>Date Admitted</td>
                             <td>Date Discharge</td>
                             <td>Member's Category</td>
                         </tr>
                         <tr>
+                            <td>3</td>
                             <td>Reyes, Pedro A.</td>
                             <td>04/15/2025</td>
                             <td>04/20/2025</td>
@@ -309,24 +310,45 @@ $showSuccess = isset($_GET['success']) && $_GET['success'] == '1';
 </div>
 <?php endif; ?>
 
-<!-- Loading Overlay -->
 <div id="loadingOverlay">
     <img src="css/loading.gif" alt="Loading..." width="170" height="170">
     <div class="loading-text">Uploading, please wait...</div>
 </div>
 
+<div id="overlayLogout" class="overlay-logout">
+  <div class="modal-logout">
+    <p>Are you sure you want to log out?</p>
+    <button onclick="logoutUser()">Yes, Logout</button>
+    <button onclick="closeLogoutModal()">Cancel</button>
+  </div>
+</div>
+
 <script>
         function showLoading() {
         document.getElementById("loadingOverlay").style.display = "flex";
-        return true; // allow the form to submit
+        return true; 
     }
 
         function confirmLogout(event) {
-        event.preventDefault(); // Prevent default link behavior
+        event.preventDefault(); 
         if (confirm("⚠️ Are you sure you want to logout?")) {
-            window.location.href = "logout.php"; // Proceed with logout
+            window.location.href = "logout.php"; 
         }
     }
+
+    let logoutConfirmed = false;
+
+  function confirmLogout() {
+    document.getElementById("overlayLogout").style.display = "flex";
+  }
+
+  function closeLogoutModal() {
+    document.getElementById("overlayLogout").style.display = "none"; 
+  }
+
+  function logoutUser() {
+    window.location.href = 'logout.php'; 
+  }
 
 </script>
 
@@ -351,12 +373,11 @@ function toggleDropdown(event) {
 
 function toggleSubmenu(event) {
     event.preventDefault();
-    event.stopPropagation(); // Prevents the main dropdown from closing
+    event.stopPropagation(); 
 
     var submenu = event.currentTarget.nextElementSibling;
     submenu.classList.toggle("show");
 
-    // Optionally close other submenus
     var otherSubmenus = document.querySelectorAll(".submenu-content");
     otherSubmenus.forEach(function (other) {
         if (other !== submenu) {
@@ -437,10 +458,6 @@ document.addEventListener('click', function (event) {
                 <label><input type="checkbox" name="formats[]" value="excel"> Excel</label><br>
                 <label><input type="checkbox" name="formats[]" value="csv"> CSV</label><br>
                 <label><input type="checkbox" name="formats[]" value="pdf"> PDF</label><br><br>
-
-                <div style="text-align: right;">
-                    <button type="submit" style="padding: 8px 16px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">Save</button>
-                </div>
             </form>
 
             <div style="text-align: right;">
@@ -536,20 +553,27 @@ document.addEventListener('click', function (event) {
                 };
             });
 
-    } else if (title === '📝 Admin Notes / Logs') {
+    }else if (title === '📝 Admin Notes / Logs') {
     document.getElementById('popupTitle').innerText = '📝 Admin Notes / Logs';
 
-    content = `
-        <form id="adminNotesForm">
-            <label for="admin_notes">System Notes:</label><br>
-            <textarea name="admin_notes" rows="6" style="width: 100%;"></textarea><br><br>
-        </form>
+    fetch('get_admin_notes.php')
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('popupTitle').innerText = '📝 Admin Notes / Logs';
+        if (data.length === 0) {
+            content = `<p>No admin notes available.</p>`;
+        } else {
+            content = data.map(note => `
+                <div style="margin-bottom: 15px;">
+                    <strong>${note.created_at}</strong><br>
+                    <p style="white-space: pre-wrap;">${note.note}</p>
+                    <hr>
+                </div>
+            `).join('');
+        }
 
-        <div style="text-align: right;">
-                <button type="submit" id="adminNotesForm" style="padding: 8px 16px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">Save</button>
-        </div>
-        <div id="adminNotesFeedback" style="margin-top: 10px; font-size: 13px; color: green;"></div>
-    `;
+        document.getElementById('popupContent').innerHTML = content;
+    });
 
     fetch('get_admin_notes.php')
     .then(res => res.json())
@@ -570,7 +594,7 @@ document.addEventListener('click', function (event) {
             });
         };
     });
-    } else if (title === '🔄 Reset Options') {
+    }  else if (title === '🔄 Reset Options') {
     document.getElementById('popupTitle').innerText = '🔄 Reset Options';
 
     content = `
@@ -697,7 +721,7 @@ function confirmClearData(event) {
     event.preventDefault(); 
 
     if (confirm("⚠️ Are you sure you want to clear all data? This action cannot be undone.")) {
-        window.location.href = 'display_summary.php?action=clear_data';
+        window.location.href = 'dashboard.php?action=clear_data';
     }
 }
 
