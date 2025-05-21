@@ -226,34 +226,6 @@ if ($selected_file_id && $selected_sheet) {
         </div>
     </form>
 
-    <div class="table-responsive" id="content">
-    <h2 class="text-center mt-4" style="margin-top:20px;">Leading Causes Summary</h2>
-
-    <form method="GET" class="mb-4" id="filterForm">
-        <div class="sige">
-            <label for="file_id">Select File:</label>
-            <select name="file_id" id="file_id" onchange="document.getElementById('filterForm').submit()" class="form-select w-25 d-inline-block mb-2">
-                <option value="">-- Choose File --</option>
-                <?php foreach ($files as $file): ?>
-                    <option value="<?= $file['id'] ?>" <?= $selected_file_id == $file['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($file['file_name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-
-            <?php if ($selected_file_id): ?>
-                <label for="sheet">Select Sheet:</label>
-                <select name="sheet" id="sheet" onchange="document.getElementById('filterForm').submit()" class="form-select w-25 d-inline-block mb-2">
-                    <option value="" disabled selected>Select Month</option>
-                    <?php foreach ($sheets as $sheet): ?>
-                        <option value="<?= $sheet ?>" <?= $sheet === $selected_sheet ? 'selected' : '' ?>>
-                            <?= $sheet ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            <?php endif; ?>
-        </div>
-    </form>
 
     <div class="table-responsive1 d-flex justify-content-between gap-4" id="printable">
         <?php if ($selected_sheet): ?>
